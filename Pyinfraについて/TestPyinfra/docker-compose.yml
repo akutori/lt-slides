@@ -1,0 +1,29 @@
+services:
+  #controller:
+  #  build: ./Docker/controller
+  #  container_name: pyinfra-controller
+  #  volumes:
+  #    - ./project:/project
+  #  working_dir: /project
+  #  command: sleep infinity
+
+  target:
+    build: ./Docker/target
+    container_name: target-server
+    ports:
+      - "2222:22"
+      - "5433:5432"
+    # 以下は systemctlをコンテナ内で動作させるための設定
+    privileged: true
+    
+    # 以下のディストリビューションではcgroupnsの設定でこちらが使用できる(cgroup v2対応)
+    # Fedora (since 31)
+    # Debian GNU/Linux (since 11)
+    # Ubuntu (since 21.10)
+    cgroup: host
+    # 以下は systemctlをコンテナ内で動作させるための設定 (cgroup v1対応)
+    # volumes:
+      # - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    command: /sbin/init
+    # systemd用のシグナル設定 (コンテナ停止時にsystemdに正しくシグナルを送る)
+    stop_signal: SIGRTMIN+3

@@ -1,0 +1,65 @@
+- name: postgresqlの初期データベースを作成(RedHat系のみ)
+  become: yes
+  command: /usr/bin/postgresql-setup --initdb --unit postgresql
+  args:
+    # 既に初期化されている場合は実行しない(init db された場合はPG_VERSIONファイルが作成される)
+    creates: /var/lib/pgsql/data/PG_VERSION
+  when: ansible_facts.os_family == "RedHat"
+
+
+- name: debug --> postgresのテンプレート変数確認
+  tags: debug-postgres-config
+  debug:
+    msg: "listen_addresses={{ listen_addresses }}, local_network_cidr={{ local_network_cidr }}"
+
+- name: postgresqlの設定ファイルを配置
+  become: yes
+  become_user: root
+  template:
+    src: postgresql.conf.j2
+    dest: "{{ postgresql_conf_path }}/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  
+- name: pg_hba.confの設定ファイルを配置
+  become: yes
+  become_user: root
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_conf_path }}/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: '0640'
+
+- name: postgresqlの再起動から設定反映の確認
+  debug:
+    msg: "PostgreSQLの設定ファイルを配置しました。再起動して設定を反映します。"
+
+- name: postgresqlサービスを再起動
+  #service:
+  #  name: postgresql
+  #  state: restarted
+  #become: yes
+  #ignore_errors: yes
+  debug:
+    msg: "コンテナ環境におけるPostgreSQLサービスの再起動をスキップしています"
+
+- name: 直接postgresqlを再起動
+  command: "{{ postgresql_restart_command }}"
+  become: yes
+  become_user: postgres
+  register: pg_restart_result
+  changed_when: pg_restart_result.rc != 0
+
+
+- debug:
+    msg: "コンテナ内のため、PostgreSQLの直接再起動を試みています"
+
+- name: ユーザーpostgresのパスワードを設定
+  become: yes
+  become_user: postgres
+  command: psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+  # 既にパスワードが設定されている場合は実行しない
+  register: postgres_password_check
+  changed_when: postgres_password_check.rc != 0

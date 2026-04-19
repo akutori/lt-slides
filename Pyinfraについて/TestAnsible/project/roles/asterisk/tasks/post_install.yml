@@ -1,0 +1,19 @@
+- name: asteriskサービスを起動して有効化
+  # dockerでは systemdが動作しないため、失敗しても無視する
+  ignore_errors: yes
+  systemd:
+    name: asterisk
+    state: started
+    enabled: yes
+
+- name: asteriskのバージョン確認
+  tags: asterisk-version # タグを指定して実行可能
+  command: asterisk -V
+  register: asterisk_version
+  changed_when: asterisk_version.rc != 0 # 常に変更なしとみなす(falseでもOK)
+
+
+- name: asteriskバージョンの表示
+  tags: asterisk-version # 同じタグを指定した場合は同時に実行可能
+  debug:
+    var: asterisk_version.stdout

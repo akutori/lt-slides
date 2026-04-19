@@ -1,0 +1,9 @@
+
+  # ---- 【実践編】 Asteriskのインストールと起動 ----
+  # include_tasks: install-asterisk.yml で読み込まれる場合はこのファイルをそのまま読み込むためhostsやtasksを指定しない
+  # したがって、このファイル内では tasks: 以下に直接タスクを記述する
+  # なお、install-asterisk.ymlを単独で実行する場合は hostsやtasksを指定する必要がある
+- import_tasks: setup_user.yml
+- import_tasks: download.yml
+- import_tasks: build.yml
+- import_tasks: post_install.yml

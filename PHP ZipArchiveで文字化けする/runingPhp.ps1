@@ -1,0 +1,1 @@
+docker build -t php-zip . && docker run --rm -v "${PWD}:/app" php-zip php /app/main.php

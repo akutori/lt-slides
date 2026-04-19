@@ -1,0 +1,17 @@
+services:
+  asterisk:
+    build: .
+    container_name: asterisk-server
+    restart: always
+    # SIPのNAT問題を避けるため、ホストネットワークを推奨(linuxのみ)
+    # network_mode: host
+    ports: # windows/macOSの場合はポートを明示的に開ける
+      - "6060:5060/udp"        # SIP信号
+      - "10000-10100:10000-10100/udp"  # 音声データ（範囲を絞る）
+    volumes:
+      # ホストの設定ファイルをコンテナ内にマウント
+      - ./config:/etc/asterisk
+      - ./sounds:/var/lib/asterisk/sounds/ja/
+    # 日本時間に合わせる
+    environment:
+      - TZ=Asia/Tokyo

@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+
+# Marp generated outputs (.md があれば再生成可能)
+*.html
+*.pptx
+
+# Asterisk compiled audio (.wav から変換される中間ファイル)
+*.sln16

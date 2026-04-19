@@ -1,0 +1,27 @@
+- name: asteriskグループを作成
+  ansible.builtin.group:
+    name: asterisk
+    state: present
+  become: yes
+
+- name: asteriskユーザーを作成
+  ansible.builtin.user:
+    name: asterisk
+    group: asterisk
+    # システムユーザー(OSやサービス専用のユーザー)として作成
+    system: yes
+    # Asteriskユーザーのログインシェルを/sbin/nologinに設定してログイン不可にする
+    shell: /sbin/nologin
+  # このタスクはroot権限で実行する必要があるため、becomeを指定
+  become: yes
+
+# これをしないと asteriskユーザーでansible実行時に
+# 一時ディレクトリが作成できずエラーになる
+- name: asteriskユーザーのAnsible一時ディレクトリを作成
+  ansible.builtin.file:
+    path: /home/asterisk/.ansible/tmp
+    state: directory
+    owner: asterisk
+    group: asterisk
+    mode: '0700'
+  become: yes

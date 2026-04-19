@@ -1,0 +1,118 @@
+# yamlキーごとの機能については 以下を参照
+# https://docs.ansible.com/projects/ansible/latest/reference_appendices/playbooks_keywords.html#playbook-keywords
+# ローカルホストでテンプレートから設定ファイルを生成し、
+# 生成したファイルをターゲットサーバーにコピーするPlaybook
+# テンプレートエンジンとしてJinja2を使用する点に注目
+- hosts: localhost # ホスト名
+  
+  # ローカルホストで実行(通常SSH接続が指定されるので本来は不要)
+  # local,ssh,winrm,dockerなどが指定可能
+  connection: local 
+  vars: # Jinja2テンプレートに渡す変数
+    app_port: 8080
+    mode : "production"
+
+  tasks: # タスク一覧
+
+    - name: Place config file from 
+      # テンプレートファイルに基づき設定ファイルを生成して保存
+      template:
+        # テンプレートファイルのパス(Ansibleホスト基準)
+        src: sample.conf.j2
+        # 生成先のパス(Ansibleホスト基準)
+        dest: /tmp/sample.conf
+        # ファイルの所有者、グループ、パーミッション設定
+        owner: root
+        group: root
+        mode: '0644'
+
+
+    - name: タイムゾーンをAsia/Tokyoに設定
+      tags: timezone
+      become: yes
+      command: timedatectl set-timezone Asia/Tokyo
+      # systemdが利用可能な場合のみ実行
+      when: ansible_facts.service_mgr == "systemd"
+
+# ターゲットサーバーにAnsibleホスト内から操作するPlaybook
+- hosts: target-server
+  
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+
+  # rolesよりも最初に実行させるタスク
+  pre_tasks:
+
+    # Ubuntu/Debian系の場合、aptモジュールを使用するにはpython3-aptパッケージが必要
+    # python3-aptはUbuntu（Debian系OS）側が提供している公式パッケージ
+    - name: Ensure python3-apt is installed
+      tags: python3apt
+      apt:
+        name: python3-apt
+        state: present
+        cache_valid_time: 3600 # 1時間以内ならキャッシュ更新をスキップ
+      become: yes
+      
+
+
+    - name: 日本語ロケールパッケージのインストール
+      apt:
+        name: language-pack-ja
+        state: present
+
+
+    - name: ロケール生成 (念の為)
+      command: update-locale LANG=ja_JP.UTF-8
+      changed_when: false # 常に変更なしとみなす
+  
+  roles: 
+    # 役割(ロール)としてasteriskを指定。これによりroles/asterisk/tasks/main.ymlが実行される
+    # どうやら他のプレイよりも先に実行される模様
+    - role: asterisk
+      tags: asterisk_setup
+    
+    - role: postgresql
+      tags: postgresql_setup
+
+  tasks:
+    
+    - name: タイムゾーンをAsia/Tokyoに設定
+      tags: timezone
+      become: yes
+      command: timedatectl set-timezone Asia/Tokyo
+      # systemdが利用可能な場合のみ実行
+      when: ansible_facts.service_mgr == "systemd"
+
+
+    - name: コントローラーからターゲットにファイルサンプルファイルコピー
+      # Ansibleからターゲットにファイルをコピーするモジュール
+      copy:
+        src: files/sample.conf
+        dest: /tmp/sample.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+
+    - name: テンプレートから生成したファイルをターゲットにコピー
+      vars: # テンプレートに渡す変数
+        app_port: 9900
+        mode : "development"
+      template:
+        src: sample.conf.j2
+        dest: /tmp/sample_from_template.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+
+    - name: ターゲットサーバー内でバックアップファイルを作成
+      copy:
+        src: /tmp/sample.conf
+        # バックアップファイル名に日付を付与(pythonのdatetimeモジュールを利用可能)
+        dest: /tmp/sample.conf.{{ ansible_facts.date_time.date }}.bak
+        remote_src: yes # ターゲットサーバー内のファイルを指定する場合に必要
+        # owner, group, modeは省略可能(コピー元の属性を引き継ぐ)
+    
+      #include_tasks: install-asterisk.yml # 別ファイルのタスクを読み込む

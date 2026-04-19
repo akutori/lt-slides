@@ -1,0 +1,21 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for postgresql
+
+postgresql_version: 16
+
+postgresql_conf_path_redhat: /var/lib/pgsql/data
+postgresql_conf_path_debian: /etc/postgresql/{{ postgresql_version }}/main
+
+postgresql_restart_command_redhat: pg_ctl restart -D /var/lib/pgsql/data -m fast
+postgresql_restart_command_debian: pg_ctlcluster {{ postgresql_version }} main restart
+
+postgresql_conf_var_lib_path: /var/lib/postgresql/{{ postgresql_version }}/main
+
+postgresql_conf_path_map:
+  RedHat: "{{ postgresql_conf_path_redhat }}"
+  Debian: "{{ postgresql_conf_path_debian }}"
+
+postgresql_restart_command_map:
+  RedHat: "{{ postgresql_restart_command_redhat }}"
+  Debian: "{{ postgresql_restart_command_debian }}"

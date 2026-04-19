@@ -1,0 +1,6 @@
+# pg_hba.confのローカルネットワークCIDR設定
+local_network_cidr: "172.18.0.0/24"
+#local_network_cidr: "192.168.0.0/24"
+
+# postgresql.confのlisten_addressesを変更
+listen_addresses: "'*'"

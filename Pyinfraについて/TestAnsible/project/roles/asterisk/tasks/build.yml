@@ -1,0 +1,143 @@
+- name: asteriskの依存パッケージインストールとビルド
+  # 複数のシェルコマンドを順次実行するため、shellモジュールを使ったタスクを複数まとめて実行
+  block:
+
+  - name: /tmpディレクトリにtar展開先のディレクトリを作成
+    become: yes
+    file:
+      path: /tmp/asterisk
+      state: directory
+      owner: asterisk
+      group: asterisk
+      mode: '0755'
+
+  # - name: asteriskのソースコードを展開
+  #   become: yes
+  #   become_user: asterisk
+
+  #   shell: |
+  #     tar zxvf asterisk.tar.gz -C asterisk --strip-components 1
+  #   args:
+  #     creates: /tmp/asterisk/LICENSE # 既に展開されている場合は実行しない(ワイルドカード不可のため注意)
+  #     chdir: /tmp
+
+  # 【unarchiveモジュール使用版】
+  # https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/unarchive_module.html
+  # unarchiveモジュールは、destディレクトリが存在しないとエラーになるため
+  # 必ず事前に file モジュールでディレクトリを作成しておく必要がある
+  # -> shellとどちらが良いかはケースバイケースで上はシェルスクリプトをそのまま使いたい場合に有効
+  
+  # このやり方は tar zxvf をansibleモジュールで宣言的にやってくれるイメージ
+  # 今回展開先フォルダ名を固定にしているのは、後続のタスクで chdir: /tmp/asterisk としているため
+  # そのため引数として strip-components=1 を指定して、展開先に余計なディレクトリ階層ができないようにしている点に注意 
+  # -> Asteriskのソースコードのtar.gz内には最上位に asterisk-<version> というディレクトリがあるため、後のcredatesでの存在チェックがうまくいかなくなる
+  - name: asteriskのソースコードを展開 (unarchiveモジュール使用)
+    
+    become: yes
+    become_user: asterisk
+    
+    # unarchiveモジュールは、展開先ディレクトリ(dest)がない場合、自動で作成してくれる
+    # ただし、権限を細かく指定したい場合は、やはり先に file モジュールがある方が丁寧
+    # このやり方は mkdir と tar zxvf を一度にやってくれるイメージ
+    unarchive:
+      src: /tmp/asterisk.tar.gz
+      dest: /tmp/asterisk
+      remote_src: yes       # ターゲット上のファイルを展開する場合 (copyではない)
+      # tar xzvf の 引数として strip-components を渡す
+      extra_opts:
+        - --strip-components=1
+      # 冪等性の担保: このファイルがあれば展開しない
+      creates: /tmp/asterisk/LICENSE
+
+
+  - name: asteriskの依存パッケージをインストール
+
+    become: yes
+    
+    # YAMLでリストとして定義した変数（例：asterisk_configure_option）をシェルコマンドなどで使う場合、そのままではリスト型なので、
+    # join(' ') などで スペース区切りの文字列に変換（展開） する必要がある点に注意
+    # ex) {{ asterisk_configure_option | join(' ') }}
+    shell: |
+      ./contrib/scripts/install_prereq install
+    register: asterisk_install_prereq_result # コマンドの実行結果を変数に登録
+    environment:
+      DEBIAN_FRONTEND: noninteractive # 対話型プロンプトを無効化
+    failed_when:
+      - asterisk_install_prereq_result.rc != 0 # コマンドの終了コードが0以外の場合は失敗とみなす
+      - "'Error' in asterisk_install_prereq_result.stderr"
+      - "'failed' in asterisk_install_prereq_result.stderr.lower()"
+    args:
+      creates: /usr/sbin/asterisk # 既にインストールされている場合は実行しない
+      chdir: /tmp/asterisk
+
+
+  - name: asteriskのコンパイルとビルド
+    
+    # Asteriskユーザーを使用してインストールを実行するため、become_userを指定
+    become: yes
+    become_user: asterisk
+
+    shell: |
+      ./configure {{ asterisk_configure_option | join(' ') }}
+      make menuselect.makeopts
+      menuselect/menuselect {{ asterisk_menuselect_options | join(' ') }}
+      menuselect.makeopts
+      make
+
+    register: asterisk_configure_result # コマンドの実行結果を変数に登録
+    # エラーハンドリング: stderrに"Error"または"failed"が含まれている場合は失敗とみなす
+    failed_when:
+      - asterisk_configure_result.rc != 0
+      - "'Error' in asterisk_configure_result.stderr"
+      - "'failed' in asterisk_configure_result.stderr.lower()"
+    args:
+      creates: /usr/sbin/asterisk # 既にインストールされている場合は実行しない
+      chdir: /tmp/asterisk
+
+  
+  - name: root権限でAsteriskをインストール
+    become: yes
+    shell: |
+      make install
+      make samples
+    register: asterisk_install_result
+    failed_when:
+      - asterisk_install_result.rc != 0
+      - "'Error' in asterisk_install_result.stderr"
+      - "'failed' in asterisk_install_result.stderr.lower()"
+    args:
+      creates: /usr/sbin/asterisk # 既にインストールされている場合は実行しない
+      chdir: /tmp/asterisk
+
+  # これを行わないとユーザーasteriskがAsteriskの設定ファイルにアクセスできず動作しない
+  #  Asteriskが実行中にファイルの書き込みや作成を行う可能性があるディレクトリ
+  - name: Asteriskの関連ディレクトリの所有者を変更
+    become: yes
+    # ansible.builtin.file モジュールを使用してディレクトリの所有者とグループを変更
+    ansible.builtin.file:
+      # 対象のディレクトリパス
+      # loopで複数のディレクトリを指定
+      path: "{{ item }}"
+      # ディレクトリとして扱う
+      # 他には  file, link, hardなどがある
+      state: directory
+      owner: asterisk
+      group: asterisk
+      # ディレクトリを再帰的に変更するため、recurse: yesを指定
+      recurse: yes
+    loop:
+      - /etc/asterisk
+      - /var/lib/asterisk
+      - /var/log/asterisk
+      - /var/run/asterisk
+      - /var/spool/asterisk
+      - /var/cache/asterisk
+  
+  # エラーハンドリング: block内のいずれかのタスクが失敗した場合に実行
+  rescue:
+    - name: prereq/build/install失敗時の標準出力・標準エラー出力を表示
+      debug:
+        msg: |
+          prereq_result: {{ asterisk_install_prereq_result.stderr | default('') }}
+          build_result: {{ asterisk_configure_result.stderr | default('') }}
+          install_result: {{ asterisk_install_result.stderr | default('') }}

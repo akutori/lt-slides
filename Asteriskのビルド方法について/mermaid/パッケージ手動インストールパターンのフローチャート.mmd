@@ -1,0 +1,9 @@
+flowchart LR
+    A[1. ./configure] --> B[2. エラーや警告を確認]
+    B --> C[3. 必要な -dev パッケージを apt install]
+    C --> D[4. make menuselect]
+    D --> E{5. モジュールに<br>「Depends on: ○○」}
+    E -- あり --> F[6. さらに必要なパッケージを apt install]
+    F --> G[7. ./configure を再実行<br>（必要なら make clean）]
+    G --> D
+    E -- なし --> H[9. make → make install]

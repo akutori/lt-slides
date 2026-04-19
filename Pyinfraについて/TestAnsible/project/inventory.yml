@@ -1,0 +1,47 @@
+# Ansibleインベントリファイル
+# このファイルはターゲットサーバーの情報を定義する
+# インベントリファイルの形式はINI形式またはYAML形式が利用可能
+all: # 全てのホストを含むグループ
+  # グループ変数の定義
+  # playbook内で参照可能
+  vars:
+    # リストにした場合はpraybook内でjoin(' ')などで展開して使用する必要がある点に注意
+    download_asterisk_filename: "asterisk-20-current.tar.gz"
+    asterisk_configure_option: 
+      - "--with-jansson-bundled"
+      - "--with-ssl=ssl"
+      - "--with-pjproject-bundled"
+      - "--with-opus"
+    asterisk_menuselect_options:
+      - "--disable BUILD_NATIVE" 
+      - "--enable CORE-SOUNDS-JA-WAV" 
+      - "--enable MOH-OPSOUND-WAV"
+      - "--enable codec_opus" 
+      - "--enable res_srtp"
+  children:
+    target: # ターゲットサーバーを含むグループ
+      vars:
+        # グループ変数の定義
+        # 対象グループのplaybook内で参照可能(この場合だとtargetグループ内のホスト)
+        # allグループのvarsよりも優先される
+        download_asterisk_filename: "asterisk-20-current.tar.gz"
+        asterisk_configure_option: 
+          - "--with-jansson-bundled"
+          - "--with-ssl=ssl"
+          - "--with-pjproject-bundled"
+          - "--with-opus"
+        asterisk_menuselect_options:
+          - "--disable BUILD_NATIVE" 
+          - "--enable CORE-SOUNDS-JA-WAV" 
+          - "--enable MOH-OPSOUND-WAV"
+          - "--enable codec_opus" 
+          - "--enable res_srtp"
+      hosts: 
+        target-server:
+          # ansible_* 変数でターゲットサーバーの接続情報を指定
+          # ansible_hostはターゲットサーバーの接続先ホスト名またはIPアドレス
+          ansible_host: target-server
+          # SSH接続に使用するユーザー名、パスワード、Pythonインタープリタのパス
+          ansible_user: root
+          ansible_password: root
+          ansible_python_interpreter: /usr/bin/python3

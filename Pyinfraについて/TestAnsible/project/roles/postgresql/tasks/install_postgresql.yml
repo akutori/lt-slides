@@ -1,0 +1,8 @@
+
+- name: postgresqlをaptでインストール
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  apt:
+    name: postgresql
+    state: present # インストールされていない場合はインストール
+  become: yes

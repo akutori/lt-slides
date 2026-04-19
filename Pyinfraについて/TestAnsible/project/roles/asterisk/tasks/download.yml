@@ -1,0 +1,22 @@
+- name: ターゲットサーバー内でwgetコマンドを実行してファイルを取得
+
+  become: yes
+  become_user: asterisk
+
+  # ターゲットサーバー内でコマンドを実行するモジュール
+  command: wget https://downloads.asterisk.org/pub/telephony/asterisk/{{ download_asterisk_filename }} -O /tmp/asterisk.tar.gz
+  args:
+    creates: /tmp/asterisk.tar.gz # ファイルが存在する場合は実行しない
+
+# 仮にダウンロードで失敗した場合は処理が止まるので本来はこのplayは不要
+- name: ターゲットサーバー内でファイルの内容を表示
+  # ターゲットサーバー内でシェルコマンドを実行するモジュール
+  shell: ls -l /tmp/asterisk*
+  register: ls_result # コマンドの実行結果を変数に登録
+  changed_when: false # 常に変更なしとみなす(shellコマンドは常に変更ありとみなすため)
+
+
+- name: コマンド実行結果の表示
+  # デバッグ用のモジュール
+  debug:
+    var: ls_result.stdout_lines # コマンドの標準出力を表示
