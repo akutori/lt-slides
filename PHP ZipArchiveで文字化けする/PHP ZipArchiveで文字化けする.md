@@ -3,7 +3,7 @@ marp: true
 paginate: true
 ---
 
-# ZipArchive で解答したら文字化けした
+# ZipArchive で解凍したら文字化けした
 
 ---
 
