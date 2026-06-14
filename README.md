@@ -9,3 +9,4 @@
 - [Asteriskのダイヤルプラン設定編](./Asteriskのダイヤルプラン設定編/README.md)
 - [PHP ZipArchiveで文字化けする](./PHP%20ZipArchiveで文字化けする/README.md)
 - [Pyinfraについて](./Pyinfraについて/README.md)
+- [Faxの「アレ」について](./Faxの「アレ」について/README.md)
