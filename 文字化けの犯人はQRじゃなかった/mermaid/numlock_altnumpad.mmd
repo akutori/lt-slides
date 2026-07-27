@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant S as スキャナー
+    participant W as Windows
+    S->>W: Num Lock を ON
+    S->>W: Alt 押下 → 0 6 5 → Alt 解放
+    W->>W: 現在のコードページで解釈
+    S->>W: Num Lock を元に戻す
