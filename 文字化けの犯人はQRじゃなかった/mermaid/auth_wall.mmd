@@ -1,8 +1,0 @@
-sequenceDiagram
-    participant App as アプリ
-    participant Dev as スキャナー
-    App->>Dev: connect()
-    App->>Dev: Notify購読 (0xAE02)
-    Note over App,Dev: スキャンしても Value は NULL
-    App--xDev: auth() 未実施
-    Note over App,Dev: これを呼ばないと<br>データが流れない設計
