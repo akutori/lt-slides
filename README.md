@@ -10,4 +10,4 @@
 - [PHP ZipArchiveで文字化けする](./PHP%20ZipArchiveで文字化けする/README.md)
 - [Pyinfraについて](./Pyinfraについて/README.md)
 - [Faxの「アレ」について](./Faxの「アレ」について/README.md)
-- [QRコード読み取り時の文字列文字化けについて](./QRコード読み取り時の文字列文字化けについて/README.md)
+- [文字化けの犯人はQRじゃなかった](./文字化けの犯人はQRじゃなかった/README.md)
