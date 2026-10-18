@@ -1,0 +1,7 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP'}}}%%
+%%{init: {'themeVariables': {'fontSize': '24px'}, 'flowchart': {'wrappingWidth': 520}}}%%
+graph TD
+    A["セッション 1"] --> R["受け口<br>OTLPの受信 または console<br>session.id で束ねる"]
+    B["セッション 2"] --> R
+    C["セッション 3"] --> R
+    R --> V["一覧表示<br>実行したコマンドと進捗"]

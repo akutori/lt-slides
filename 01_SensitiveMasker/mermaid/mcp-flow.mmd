@@ -1,0 +1,5 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP'}}}%%
+%%{init: {'themeVariables': {'fontSize': '24px'}, 'flowchart': {'wrappingWidth': 800, 'rankSpacing': 36, 'nodeSpacing': 20, 'padding': 16}}}%%
+graph TD
+    A["Claude がツールを呼ぶ"] --> B["mcp がコマンドを実行し、masker CLI でマスクする"]
+    B --> C["Claude にはマスク済みの出力だけを返す"]

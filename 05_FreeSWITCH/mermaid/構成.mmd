@@ -1,0 +1,11 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP', 'fontSize': '24px'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 14, 'wrappingWidth': 420}}}%%
+graph TD
+    P["電話機など<br>(SIP)"]
+    X["外部のプログラム"]
+    F["FreeSWITCH"]
+    D["ダイヤルプラン<br>(XMLの設定)"]
+    M["IVR・FAX<br>録音・会議"]
+    P -->|"通話"| F
+    X <-->|"Event Socket"| F
+    F --> D
+    D -->|"モジュールを呼ぶ"| M

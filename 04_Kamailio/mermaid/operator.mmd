@@ -1,0 +1,8 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP', 'fontSize': '24px'}, 'flowchart': {'nodeSpacing': 40, 'rankSpacing': 60, 'padding': 14}}}%%
+graph TD
+    A["発信者"]
+    K["交換手 = Kamailio"]
+    B["受け先"]
+    A -->|"① つないで(SIP)"| K
+    K -->|"② 取り次ぐ(SIP)"| B
+    A -.->|"③ 音声は直接"| B

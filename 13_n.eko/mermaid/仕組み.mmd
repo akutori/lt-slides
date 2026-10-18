@@ -1,0 +1,6 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP'}}}%%
+%%{init: {'flowchart': {'rankSpacing': 36, 'nodeSpacing': 30}}}%%
+graph TD
+    P["参加者のブラウザ<br>(複数人)"] -->|"操作"| N["サーバー上のコンテナ<br>(n.eko が動く)"]
+    N -->|"映像・音声<br>(WebRTC)"| P
+    N -->|"中で動く"| B["ブラウザ<br>(Firefox など)"]

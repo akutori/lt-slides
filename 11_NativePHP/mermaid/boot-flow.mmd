@@ -1,0 +1,5 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP', 'fontSize': '22px'}, 'flowchart': {'wrappingWidth': 560, 'rankSpacing': 36, 'nodeSpacing': 20, 'padding': 10, 'diagramPadding': 40}}}%%
+graph TD
+    A["native:run を実行すると<br>Electron が起動する"] --> B["Electron が同梱の PHP で<br>Laravel を起動する"]
+    B --> C["Electron が Laravel に<br>起動完了を通知する"]
+    C --> D["boot() が Window::open() を呼び<br>ルート URL のウィンドウが開く"]

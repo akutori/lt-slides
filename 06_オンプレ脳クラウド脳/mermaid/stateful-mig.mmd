@@ -1,0 +1,4 @@
+%%{init: {'themeVariables': {'fontFamily': 'Noto Sans CJK JP', 'fontSize': '24px'}, 'flowchart': {'wrappingWidth': 600, 'rankSpacing': 70, 'nodeSpacing': 20, 'padding': 22}}}%%
+graph TD
+    A[不調なVM<br>ヘルスチェックに失敗] --> B[Autohealing<br>VMを再作成]
+    B --> C[引き継ぐもの<br>名前・永続ディスク<br>IP・メタデータ]
