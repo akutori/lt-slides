@@ -13,3 +13,7 @@ desktop.ini
 
 # Asterisk compiled audio (.wav から変換される中間ファイル)
 *.sln16
+
+# Node/Slidev (package.json があれば npm install で再生成可能)
+node_modules/
+.slidev/
