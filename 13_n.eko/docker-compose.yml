@@ -10,3 +10,11 @@ services:
       NEKO_WEBRTC_NAT1TO1: "127.0.0.1"
       NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "neko"
       NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "admin"
+    volumes:
+      # 名前付きボリューム(Windowsのホストパスは権限関連で入力が効かなくなったため不使用)
+      # 初回だけ手元でタブを開いておけば、RestoreOnStartup(policy.json)で次回以降そのタブが復元される
+      - "vivaldi-profile:/home/neko/.config/vivaldi"
+      - "./policy.json:/etc/opt/vivaldi/policies/managed/policies.json:ro"
+
+volumes:
+  vivaldi-profile:
