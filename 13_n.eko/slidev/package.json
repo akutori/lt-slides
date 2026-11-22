@@ -14,5 +14,8 @@
   },
   "devDependencies": {
     "playwright-chromium": "^1.64.1"
+  },
+  "allowScripts": {
+    "playwright-chromium@1.64.1": true
   }
 }
