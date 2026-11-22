@@ -7,7 +7,12 @@ services:
       - "56000-56100:56000-56100/udp"
     environment:
       NEKO_WEBRTC_EPR: "56000-56100"
-      NEKO_WEBRTC_NAT1TO1: "127.0.0.1"
+      # 同じWi-Fiの端末から繋ぐには、ホストのLAN IPを指定する(127.0.0.1だと端末自身のlocalhostに繋ぎに行って失敗する)
+      # 例: $env:NEKO_HOST_IP="192.168.2.115"; docker compose up -d
+      NEKO_WEBRTC_NAT1TO1: "${NEKO_HOST_IP:-127.0.0.1}"
+      # TURN中継(.envのNEKO_ICE_SERVERS。update-turn.ps1で生成)。未設定なら空配列
+      NEKO_WEBRTC_ICESERVERS_FRONTEND: "${NEKO_ICE_SERVERS:-[]}"
+      NEKO_WEBRTC_ICESERVERS_BACKEND: "${NEKO_ICE_SERVERS:-[]}"
       NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "neko"
       NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "admin"
     volumes:
